@@ -1,6 +1,7 @@
 # PC_control_telegram_bot
- Telegram bot for PC control with password defend
- Телеграм бот для управления ПК с защитой паролем
+Telegram bot for PC control with password defend
+
+Телеграм бот для управления ПК с защитой паролем
 
 Для того чтобы использовать этот телеграм бот для управления своим ПК, нужно:
 1) Создать собственного бота через телеграм бота @BotFather
