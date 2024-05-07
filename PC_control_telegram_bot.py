@@ -4,6 +4,7 @@ import subprocess
 import asyncio
 import threading
 import tgcrypto
+import pyautogui
 
 #Апис
 api_id = #Введите api_id вашего бота (int type)
@@ -57,6 +58,14 @@ async def volume_command(client, message):
     if not user_states.get(message.from_user.id):
         user_states[message.from_user.id] = {}
     user_states[message.from_user.id]["command"] = "volume"
+    await message.reply_text("Введите пароль для выполнения команды:")
+
+#Команда для управления плеером
+@client.on_message(filters.command(["player_control"]) & filters.private)
+async def player_control(client, message):
+    if not user_states.get(message.from_user.id):
+        user_states[message.from_user.id] = {}
+    user_states[message.from_user.id]["command"] = "player_control"
     await message.reply_text("Введите пароль для выполнения команды:")
 
 #Функция для регулировки громкости с помощью тула NirCMD
@@ -126,29 +135,112 @@ async def handle_password_message(client, message):
                     #Также отправляем юзеру
                     await message.reply_text("Установите громкость:", reply_markup=reply_markup)
 
+                elif command == "player_control":
+                    # Создаем клавиатуру с кнопками управления плеером
+                    reply_markup = InlineKeyboardMarkup(
+                        [
+                            [
+                                InlineKeyboardButton(" ", callback_data="blank"),
+                            ],
+                            [
+                                InlineKeyboardButton("<<< once", callback_data="timeline_back_once"),
+                                InlineKeyboardButton("once >>>", callback_data="timeline_forward_once"),
+                            ],
+                            [
+                                InlineKeyboardButton(" ", callback_data="blank"),
+                            ],
+                            [
+                                InlineKeyboardButton("Pause \ Play", callback_data="play_n_pause")
+                            ],
+                            [
+                                InlineKeyboardButton(" ", callback_data="blank"),
+                            ],
+                            [
+                                InlineKeyboardButton("<<< 10", callback_data="timeline_back_ten"),
+                                InlineKeyboardButton("10 >>>", callback_data="timeline_forward_ten"),
+                            ],
+                            [
+                                InlineKeyboardButton(" ", callback_data="blank"),
+                            ],
+                            [
+                                InlineKeyboardButton("Volume +", callback_data="vol_plus"),
+                            ],
+                            [
+                                InlineKeyboardButton("Volume -", callback_data="vol_minus"),
+                            ],
+                            [
+                                InlineKeyboardButton(" ", callback_data="blank"),
+                            ],
+                            [
+                                InlineKeyboardButton("Volume MAX", callback_data="vol_max"),
+                            ],
+                            [
+                                InlineKeyboardButton("Volume MIN", callback_data="vol_min"),
+                            ],
+                            [
+                                InlineKeyboardButton(" ", callback_data="blank"),
+                            ],
+                        ]
+                    )
+
+                    # Отправляем сообщение с клавиатурой пользователю
+                    await message.reply_text("Выберите команду:", reply_markup=reply_markup)
+
             else:
                 await message.reply("Неверный пароль.")
             # Удаление состояния после выполнения команды
         del user_states[user_id]["command"]
 
-#Обработка нажатий на InLine кнопки
+# Обработка нажатий на InLine кнопки
 @client.on_callback_query()
 async def handle_callback_query(client, callback_query):
     user_id = callback_query.from_user.id
-    #Проверяем, является ли нажатие кнопки выбором времени таймера
+    # Проверяем, является ли нажатие кнопки выбором времени таймера
     if callback_query.data in ["5", "10", "15", "20", "30", "60", "90", "120", "180", "cancel"]:
         if callback_query.data == "cancel":
-            #Если нажата кнопка "Отмена", отменяем таймер
+            # Если нажата кнопка "Отмена", отменяем таймер
             subprocess.run(["shutdown", "/a"])
             if user_states.get(user_id):
                 del user_states[user_id]  #Удаляем состояние, если пользователь отменил таймер
             await callback_query.message.reply("Таймер отменен.")
         else:
-            #Если нажата кнопка выбора времени, устанавливаем таймер
+            # Если нажата кнопка выбора времени, устанавливаем таймер
             time_minutes = int(callback_query.data)
             time_seconds = time_minutes * 60
             subprocess.run(["shutdown", "/s", "/t", str(time_seconds), "/d", "p:0:0"])
             await callback_query.message.reply(f"Таймер на выключение компьютера установлен на {time_minutes} минут.")
+
+    # Проверяем, является ли кнопка для управления плеером
+    elif callback_query.data in ["timeline_back_ten", "timeline_forward_ten", "timeline_back_once", "timeline_forward_once",
+                                 "vol_plus", "vol_minus", "vol_max", "vol_min", "play_n_pause", 'blank']:
+
+        if callback_query.data == 'timeline_back_once':
+            pyautogui.press('left')
+        elif callback_query.data == 'timeline_forward_once':
+            pyautogui.press('right')
+        elif callback_query.data == 'timeline_back_ten':
+            for temp in range(10):
+                pyautogui.press('left')
+        elif callback_query.data == 'timeline_forward_ten':
+            for temp in range(10):
+                pyautogui.press('right')
+        elif callback_query.data == 'vol_minus':
+            pyautogui.press('down')
+        elif callback_query.data == 'vol_plus':
+            pyautogui.press('up')
+        elif callback_query.data == 'vol_min':
+            for temp in range(20):
+                pyautogui.press('down')
+        elif callback_query.data == 'vol_max':
+            for temp in range(20):
+                pyautogui.press('up')
+        elif callback_query.data == 'play_n_pause':
+            pyautogui.press('space')
+        elif callback_query.data == 'blank':
+            pass
+        else:
+            pass
+
     else:
         #Если нажата кнопка регулировки громкости, меняем уровень громкости
         percent_change = int(callback_query.data)
@@ -161,6 +253,7 @@ bot_commands = [
     BotCommand(command='restart', description='Перезагрузить компьютер'),
     BotCommand(command='timer', description='Установить таймер на выключение компьютера'),
     BotCommand(command='volume', description='Регулировка громкости'),
+    BotCommand(command='player_control', description='Управление плеером')
 ]
 
 #Запускаем клиент
