@@ -85,7 +85,7 @@ async def player_control(client, message):
         user_states[user_id] = {"command": "player_control"}
         await message.reply_text("Введите пароль для выполнения команды:")
 
-# Обработка команд
+# Обработка команд и сообщений от пользователя
 @client.on_message(filters.private & ~filters.command(''))
 async def handle_password_message(client, message):
     global target_user_id
@@ -113,7 +113,16 @@ async def handle_password_message(client, message):
                     await message.reply_text(".....TV remote.....", reply_markup=reply_markup)
             else:
                 await message.reply("Неверный пароль.")
-            del user_states[user_id]["command"]
+        elif user_states[user_id].get("set_time"):
+            time_input = message.text.strip()
+            if time_input.isdigit():
+                time_minutes = int(time_input)
+                time_seconds = time_minutes * 60
+                subprocess.run(["shutdown", "/s", "/t", str(time_seconds), "/d", "p:0:0"])
+                await message.reply(f"Таймер на выключение компьютера установлен на {time_minutes} минут.")
+            else:
+                await message.reply("Некорректные данные. Введите число минут.")
+            del user_states[user_id]["set_time"]
 
 # Обработка нажатий на InLine кнопки
 @client.on_callback_query()
@@ -129,7 +138,8 @@ async def handle_callback_query(client, callback_query):
 
     # Задать время таймера
     elif callback_query.data == "set_time":
-        pass
+        user_states[user_id] = {"set_time": True}
+        await callback_query.message.reply("Введите количество минут:")
 
     # Отмена таймера
     elif callback_query.data == "cancel":

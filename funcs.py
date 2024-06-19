@@ -33,7 +33,7 @@ def inline_keyboards_template(command):
                 [InlineKeyboardButton("90 минут", callback_data="90"),
                  InlineKeyboardButton("120 минут", callback_data="120"),
                  InlineKeyboardButton("180 минут", callback_data="180")],
-                [InlineKeyboardButton("Пока не работает :)", callback_data="set_time")],
+                [InlineKeyboardButton("Задать время", callback_data="set_time")],
                 [InlineKeyboardButton("Отмена", callback_data="cancel")],
             ]
         )
