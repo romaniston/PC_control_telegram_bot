@@ -5,20 +5,21 @@ import tgcrypto
 import pyautogui
 import datetime
 import funcs
+import configparser
 from time import time
 from pyrogram import Client, idle, filters
 from pyrogram.types import BotCommand, InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.errors import FloodWait
 
-# Апис
-api_id = ###
-api_hash = ###
+# Чтение конфигурационных данных из config.ini
+config = configparser.ConfigParser()
+config.read('config.ini')
+api_id = config['Telegram']['api_id']
+api_hash = config['Telegram']['api_hash']
+PASSWORD = config['Telegram']['PASSWORD']
 
 # Создание объекта клиента
 client = Client("account", api_id, api_hash)
-
-# Чтение пароля из файла
-with open('pass.txt', 'r') as file:
-    PASSWORD = file.read().strip()
 
 # Словарь для отслеживания состояний пользователей
 # Ex: {*some_id*: {'command': 'volume'}}
@@ -32,7 +33,7 @@ last_password_time = {}
 async def shutdown_computer(client, message):
     user_id = message.from_user.id
     if funcs.password_valid(user_id, last_password_time):
-        # subprocess.run(["shutdown", "/s", "/t", "1"])
+        subprocess.run(["shutdown", "/s", "/t", "1"])
         await message.reply("Компьютер будет выключен.")
     else:
         user_states[user_id] = {"command": "shutdown"}
@@ -43,7 +44,7 @@ async def shutdown_computer(client, message):
 async def restart_computer(client, message):
     user_id = message.from_user.id
     if funcs.password_valid(user_id, last_password_time):
-        # subprocess.run(["shutdown", "/r", "/t", "1"])
+        subprocess.run(["shutdown", "/r", "/t", "1"])
         await message.reply("Компьютер будет перезагружен.")
     else:
         user_states[user_id] = {"command": "restart"}
@@ -121,7 +122,7 @@ async def handle_password_message(client, message):
                 subprocess.run(["shutdown", "/s", "/t", str(time_seconds), "/d", "p:0:0"])
                 await message.reply(f"Таймер на выключение компьютера установлен на {time_minutes} минут.")
             else:
-                await message.reply("Некорректные данные. Введите число минут.")
+                await message.reply("Некорректные данные.")
             del user_states[user_id]["set_time"]
 
 # Обработка нажатий на InLine кнопки
