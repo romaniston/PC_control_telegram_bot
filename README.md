@@ -10,12 +10,7 @@ ________________________________
 (pyrogram запросит токен при первом запуске чтобы создать файл сессии)
 ________________________________
 
-![no_image_im_sorry](https://raw.githubusercontent.com/romaniston/PC_control_telegram_bot/raw/master/screenshots/1.png)
-![no_image_im_sorry](https://raw.githubusercontent.com/romaniston/PC_control_telegram_bot/raw/master/screenshots/2.png)
-![no_image_im_sorry](https://raw.githubusercontent.com/romaniston/PC_control_telegram_bot/raw/master/screenshots/3.png)
-![no_image_im_sorry](https://raw.githubusercontent.com/romaniston/PC_control_telegram_bot/raw/master/screenshots/4.png)
-
-<center>Screenshots:<\center>
+<center>Screenshots:
 <p><img src="screenshots/1.png" width=300 height=540 ratio=1></img>
 <img src="screenshots/2.png" width=300 height=540></img>
 <p><img src="screenshots/3.png" width=300 height=540></img>
