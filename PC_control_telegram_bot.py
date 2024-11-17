@@ -24,7 +24,7 @@ async def on_startup(bot: Bot):
 
 async def main():
     dp.include_router(router_commands)
-    await dp.start_polling(bot, skip_updates=True, on_startup=on_startup)
+    await dp.start_polling(bot, on_startup=on_startup)
 
 
 if __name__ == "__main__":
@@ -32,4 +32,4 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print("Остановка бота")
+        print("Bot stopped")

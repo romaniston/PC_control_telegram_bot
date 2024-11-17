@@ -2,11 +2,11 @@ import subprocess
 import configparser
 import pyautogui
 from modules import keyboards, funcs
-from aiogram.types import Message, BotCommand, CallbackQuery
+from aiogram.types import Message, CallbackQuery
 from aiogram import F, Router
-from aiogram.fsm.state import StatesGroup, State # Классы состояний
-from aiogram.fsm.context import FSMContext # Инструмент управления состояниями
-from aiogram.filters import Command
+from aiogram.fsm.state import StatesGroup, State  # Классы состояний
+from aiogram.fsm.context import FSMContext  # Инструмент управления состояниями
+from aiogram.filters import Command, CommandStart
 
 router_commands = Router()
 
@@ -14,6 +14,7 @@ router_commands = Router()
 config = configparser.ConfigParser()
 config.read('config.ini')
 password = config['Telegram']['PASSWORD']
+anydesk_path = config['Anydesk']['path']
 
 list_timer_data = ['timer_5', 'timer_10', 'timer_15', 'timer_20', 'timer_30', 'timer_60', 'timer_90', 'timer_120',
                    'timer_180', 'set_time', 'cancel_timer']
@@ -37,6 +38,11 @@ class Commands(StatesGroup):
     player = State()
     anydesk_on = State()
     anydesk_off = State()
+
+
+@router_commands.message(CommandStart())
+async def start_bot(message: Message):
+    await message.answer('Hello World :3')
 
 
 @router_commands.message(Command('shutdown'))
@@ -210,6 +216,8 @@ async def volume_set_val(callback: CallbackQuery):
     except FileNotFoundError:
         await callback.message.answer('Ошибка. На компьютере не найдена утилита "NirCMD".')
         print('ERROR: Not found "NirCMD"')
+    except Exception as exc:
+        print(f'ERROR: {exc}')
     else:
         print('INFO: Volume value changed successful')
     finally:
@@ -276,20 +284,8 @@ async def player_action(callback: CallbackQuery):
     await callback.answer('')
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-@router_commands.message(Command('anydesk_on'))
-async def anydesk_on_pass(message: Message, state: FSMContext):
+@router_commands.message(Command('anydesk_on'))  # TODO don't get answer from bot im messages and print don't execute
+async def anydesk_on_pass(message: Message, state: FSMContext):  #  TODO realize "click on yes button" when windows defender ask me when I started anydesk
     global password
     tg_id = funcs.give_tg_id(message)
 
@@ -297,7 +293,10 @@ async def anydesk_on_pass(message: Message, state: FSMContext):
     await state.update_data(tg_id=tg_id)
 
     if funcs.password_valid(tg_id, last_password_time):
-        await message.answer("Отправлена команда запуска AnyDesk")
+        result = funcs.execute_anydesk(anydesk_path, message)
+        print(result)
+        await result
+        await state.clear()
     else:
         await state.set_state(Commands.anydesk_on)
         await message.answer("Введите пароль для выполнения команды:")
@@ -309,7 +308,8 @@ async def anydesk_on(message: Message, state: FSMContext):
     input_password = message.text
 
     if funcs.check_password(input_password, password):
-        await message.answer("Отправлена команда запуска AnyDesk")
+        result = funcs.execute_anydesk(anydesk_path, message)
+        result
     else:
         await message.answer("Неверный пароль")
 
