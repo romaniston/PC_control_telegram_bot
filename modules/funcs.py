@@ -1,13 +1,11 @@
 import subprocess
 import pyautogui
 from time import time
+import psutil
 
 
 def give_tg_id(message):
     return message.from_user.id
-
-
-
 
 
 # Функция для проверки пароля
@@ -29,19 +27,50 @@ def many_press_func(button, repite):
         pyautogui.press(button)
 
 
-def execute_anydesk(anydesk_path, message):
+def is_process_running(process_name, need_to_shutdown):
+    processes = []
+    for proc in psutil.process_iter(['name']):
+        if proc.info['name'] == process_name:
+            if not need_to_shutdown:
+                return True
+            elif need_to_shutdown:
+                processes.append(proc)
+    if not need_to_shutdown:
+        return False
+    if need_to_shutdown:
+        return processes
+
+
+def execute_anydesk(anydesk_path):
     try:
-        subprocess.Popen([anydesk_path], start_new_session=True)
-        print("INFO: AnyDesk is started")
-        result = message.answer('Отправлена команда запуска "AnyDesk"')
-        return result
+        anydesk_processes = is_process_running('AnyDesk.exe', need_to_shutdown=False)
+        if not anydesk_processes:
+            subprocess.Popen([anydesk_path], start_new_session=True)
+            print("INFO: AnyDesk is started")
+            return 'Отправлена команда запуска AnyDesk'
+        elif anydesk_processes:
+            print("INFO: AnyDesk is already running.")
+            return 'AnyDesk уже запущен'
     except FileNotFoundError:
         print('ERROR: "AnyDesk.exe" is not found on this path')
-        result = message.answer('Отправлена команда запуска "AnyDesk"')
-        return result
+        return 'AnyDesk не найден по заданному пути (см. "Config.ini")'
     except Exception as exc:
         print(f"ERROR: {exc}")
-        result = message.answer('Отправлена команда запуска "AnyDesk"')
-        return result
+        return 'Возникла ошибка (см. консоль)'
 
 
+def shutdown_anydesk():
+    try:
+        anydesk_processes = is_process_running('AnyDesk.exe', need_to_shutdown=True)
+        if anydesk_processes:
+            for proc in anydesk_processes:  # Terminate all anydesk processes
+                proc.terminate()
+                proc.wait()
+            print("INFO: AnyDesk is shutdown")
+            return 'Отправлена команда выключения AnyDesk'
+        elif not anydesk_processes:
+            print("INFO: AnyDesk is not executed")
+            return 'В данный момент AnyDesk не запущен'
+    except Exception as exc:
+        print(f"ERROR: {exc}")
+        return 'Возникла ошибка (см. консоль)'

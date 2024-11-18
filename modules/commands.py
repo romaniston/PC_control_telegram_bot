@@ -36,8 +36,7 @@ class Commands(StatesGroup):
     timer_set_time = State()
     volume = State()
     player = State()
-    anydesk_on = State()
-    anydesk_off = State()
+    anydesk = State()
 
 
 @router_commands.message(CommandStart())
@@ -284,8 +283,8 @@ async def player_action(callback: CallbackQuery):
     await callback.answer('')
 
 
-@router_commands.message(Command('anydesk_on'))  # TODO don't get answer from bot im messages and print don't execute
-async def anydesk_on_pass(message: Message, state: FSMContext):  #  TODO realize "click on yes button" when windows defender ask me when I started anydesk
+@router_commands.message(Command('anydesk'))  #  TODO don't get answer from bot im messages and print don't execute
+async def anydesk_ctrl_pass(message: Message, state: FSMContext):  #  TODO realize "click on yes button" when windows defender ask me when I started anydesk
     global password
     tg_id = funcs.give_tg_id(message)
 
@@ -293,55 +292,35 @@ async def anydesk_on_pass(message: Message, state: FSMContext):  #  TODO realize
     await state.update_data(tg_id=tg_id)
 
     if funcs.password_valid(tg_id, last_password_time):
-        result = funcs.execute_anydesk(anydesk_path, message)
-        print(result)
-        await result
-        await state.clear()
+        await message.answer('Управление AnyDesk', reply_markup=keyboards.keyboard_anydesk())
     else:
-        await state.set_state(Commands.anydesk_on)
+        await state.set_state(Commands.anydesk)
         await message.answer("Введите пароль для выполнения команды:")
 
 
-@router_commands.message(Commands.anydesk_on)
-async def anydesk_on(message: Message, state: FSMContext):
+@router_commands.message(Commands.anydesk)
+async def anydesk_ctrl(message: Message, state: FSMContext):
     global password
     input_password = message.text
 
     if funcs.check_password(input_password, password):
-        result = funcs.execute_anydesk(anydesk_path, message)
-        result
+        await message.answer('Управление AnyDesk', reply_markup=keyboards.keyboard_anydesk())
     else:
         await message.answer("Неверный пароль")
 
     await state.clear()
 
 
-@router_commands.message(Command('anydesk_off'))
-async def anydesk_off_pass(message: Message, state: FSMContext):
-    global password
-    tg_id = funcs.give_tg_id(message)
-
-    await state.clear()
-    await state.update_data(tg_id=tg_id)
-
-    if funcs.password_valid(tg_id, last_password_time):
-        await message.answer("Отправлена команда выключения AnyDesk")
-    else:
-        await state.set_state(Commands.anydesk_off)
-        await message.answer("Введите пароль для выполнения команды:")
+@router_commands.callback_query(F.data == '_adesk_will_be_on')
+async def anydesk_on(callback: CallbackQuery):
+    info_mes = funcs.execute_anydesk(anydesk_path)
+    await callback.message.edit_text(info_mes)
 
 
-@router_commands.message(Commands.anydesk_off)
-async def anydesk_off(message: Message, state: FSMContext):
-    global password
-    input_password = message.text
-
-    if funcs.check_password(input_password, password):
-        await message.answer("Отправлена команда выключения AnyDesk")
-    else:
-        await message.answer("Неверный пароль")
-
-    await state.clear()
+@router_commands.callback_query(F.data == '_adesk_will_be_off')
+async def anydesk_off(callback: CallbackQuery):
+    info_mes = funcs.shutdown_anydesk()
+    await callback.message.edit_text(info_mes)
 
 
 

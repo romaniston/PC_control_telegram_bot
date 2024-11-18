@@ -2,15 +2,14 @@ from aiogram.types import BotCommand
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 
-def setup_bot_commands():
+def keyboard_main_commands():
     bot_commands = [
         BotCommand(command="/shutdown", description="Выключить ПК"),
         BotCommand(command="/reboot", description="Перезагрузить ПК"),
         BotCommand(command="/timer", description="Установить таймер на выключение"),
         BotCommand(command="/volume", description="Регулировка громкости"),
         BotCommand(command="/player", description="Управление плеером"),
-        BotCommand(command="/anydesk_on", description="Запуск AnyDesk"),
-        BotCommand(command="/anydesk_off", description="Выключение AnyDesk")
+        BotCommand(command="/anydesk", description="Управление AnyDesk")
     ]
     return bot_commands
 
@@ -75,6 +74,17 @@ def keyboard_player_control():
             [InlineKeyboardButton(text="Volume MIN", callback_data="vol_min"),
             InlineKeyboardButton(text="Volume MAX", callback_data="vol_max")],
             [InlineKeyboardButton(text=" ", callback_data="blank")],
+        ]
+    )
+    return reply_markup
+
+
+def keyboard_anydesk():
+    reply_markup = InlineKeyboardMarkup(
+        inline_keyboard=
+        [
+            [InlineKeyboardButton(text="Запустить", callback_data="_adesk_will_be_on"),
+             InlineKeyboardButton(text="Выключить", callback_data="_adesk_will_be_off")]
         ]
     )
     return reply_markup

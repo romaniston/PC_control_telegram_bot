@@ -4,7 +4,7 @@ import configparser
 from aiogram import Bot, Dispatcher
 from aiogram.filters import CommandStart
 from modules.commands import router_commands
-from modules.keyboards import setup_bot_commands
+from modules.keyboards import keyboard_main_commands
 
 
 # Читаем конфиг
@@ -18,7 +18,7 @@ dp = Dispatcher()
 
 
 async def on_startup(bot: Bot):
-    bot_commands = setup_bot_commands()
+    bot_commands = keyboard_main_commands()
     await bot.set_my_commands(bot_commands)
 
 
