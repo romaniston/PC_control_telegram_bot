@@ -1,18 +1,18 @@
+import threading
 import logging
 import asyncio
 import configparser
 from aiogram import Bot, Dispatcher
 from aiogram.filters import CommandStart
-from modules.commands import router_commands
+from modules.handlers import router_handlers
 from modules.keyboards import keyboard_main_commands
 
 
-# Читаем конфиг
 config = configparser.ConfigParser()
 config.read('config.ini')
 api_token = config['Telegram']['api_token']
 
-# Инициализация бота и диспетчера
+# bot & dispatcher inizializating
 bot = Bot(token=api_token)
 dp = Dispatcher()
 
@@ -23,7 +23,7 @@ async def on_startup(bot: Bot):
 
 
 async def main():
-    dp.include_router(router_commands)
+    dp.include_router(router_handlers)
     await dp.start_polling(bot, on_startup=on_startup)
 
 

@@ -1,21 +1,38 @@
 import subprocess
 import pyautogui
-from time import time
 import psutil
+from time import time
 
 
 def give_tg_id(message):
     return message.from_user.id
 
 
-# Функция для проверки пароля
 def check_password(input_password, password):
     return input_password == password
 
 
-# Таймаут свободного доступа без пароля на 120 минут после успешного ввода
-def password_valid(tg_id, last_password_time):
-    return tg_id in last_password_time and time() - last_password_time[tg_id] < 7200
+def input_key_in_dict(tg_id, last_time_password):
+    try:
+        key_exist_check = last_time_password.get(tg_id)
+    except KeyError:
+        last_time_password[tg_id] = None
+
+
+# access granted after correct password in n seconds
+access_time_val = 3
+def access_granted(tg_id, last_time_password):
+    last_time_password_var = last_time_password.get(tg_id)
+
+    if last_time_password_var == None:
+        return False
+    elif last_time_password_var != None:
+        current_time = time()
+        access_time = current_time - last_time_password_var
+        if access_time > access_time_val:
+            return False
+        elif access_time < access_time_val:
+            return True
 
 
 def adjust_volume(volume_val):
