@@ -1,4 +1,3 @@
-import threading
 import logging
 import asyncio
 import configparser
